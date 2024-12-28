@@ -36,4 +36,8 @@ public class User {
         return temp_map;
     }
 
+
+    public void showUserDetails(){
+        System.out.print("Account Username: " + username);
+    }
 }
