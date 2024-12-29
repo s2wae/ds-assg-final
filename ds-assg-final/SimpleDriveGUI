@@ -34,6 +34,10 @@ public class SimpleDriveGUI {
             JButton uploadLocalButton = new JButton("Upload File");
             uploadLocalButton.addActionListener(e -> uploadFileFromLocal());
 
+            // New File button
+            JButton newFileButton = new JButton("New File");
+            newFileButton.addActionListener(e -> createNewFile());
+
             // Operation panel
             JPanel operationPanel = new JPanel();
             operationPanel.setLayout(new BoxLayout(operationPanel, BoxLayout.Y_AXIS));
@@ -81,8 +85,12 @@ public class SimpleDriveGUI {
             });
 
             // Main panel layout
+            JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            topPanel.add(uploadLocalButton);
+            topPanel.add(newFileButton);
+
             mainPanel.add(listScrollPane, BorderLayout.CENTER);
-            mainPanel.add(uploadLocalButton, BorderLayout.NORTH);
+            mainPanel.add(topPanel, BorderLayout.NORTH);
             mainPanel.add(operationPanel, BorderLayout.EAST);
             mainPanel.add(logoutButton, BorderLayout.SOUTH);
 
@@ -128,6 +136,45 @@ public class SimpleDriveGUI {
                 refreshFileList();
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(null, "Error uploading file: " + e.getMessage());
+            }
+        }
+    }
+
+    private static void createNewFile() {
+        JTextField fileNameField = new JTextField();
+        JTextArea fileContentArea = new JTextArea(10, 30);
+        fileContentArea.setLineWrap(true);
+        fileContentArea.setWrapStyleWord(true);
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(new JLabel("Enter file name:"), BorderLayout.NORTH);
+        panel.add(fileNameField, BorderLayout.CENTER);
+        panel.add(new JScrollPane(fileContentArea), BorderLayout.SOUTH);
+
+        int result = JOptionPane.showConfirmDialog(null, panel, "Create New File", JOptionPane.OK_CANCEL_OPTION);
+
+        if (result == JOptionPane.OK_OPTION) {
+            String fileName = fileNameField.getText().trim();
+            String content = fileContentArea.getText();
+
+            if (fileName.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "File name cannot be empty.");
+                return;
+            }
+
+            File newFile = new File(STORAGE_DIR, fileName);
+
+            if (newFile.exists()) {
+                JOptionPane.showMessageDialog(null, "File already exists.");
+                return;
+            }
+
+            try (FileWriter writer = new FileWriter(newFile)) {
+                writer.write(content);
+                JOptionPane.showMessageDialog(null, "File created successfully!");
+                refreshFileList();
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(null, "Error creating file: " + e.getMessage());
             }
         }
     }
