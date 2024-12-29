@@ -1,15 +1,15 @@
-import java.io.*;
 import javax.swing.*;
 import java.awt.*;
+import java.io.*;
 import java.awt.event.*;
 
 public class SimpleDriveGUI {
 
-    private static final String STORAGE_DIR = "storage"; // Simulated storage directory
+    private static final String STORAGE_DIR = "storage";
     private static DefaultListModel<String> fileListModel;
 
-    public static void main(String[] args) {
-        // Initialize the storage directory
+    public void showGUI() {
+        // Initialize database
         File storageDir = new File(STORAGE_DIR);
         if (!storageDir.exists()) {
             storageDir.mkdir();
@@ -74,10 +74,17 @@ public class SimpleDriveGUI {
             operationPanel.add(editFileButton);
             operationPanel.add(deleteFileButton);
 
+            JButton logoutButton = new JButton("Logout");
+            logoutButton.addActionListener(e -> {
+                frame.dispose();
+                SwingUtilities.invokeLater(() -> new WelcomePage().showPage());
+            });
+
             // Main panel layout
             mainPanel.add(listScrollPane, BorderLayout.CENTER);
             mainPanel.add(uploadLocalButton, BorderLayout.NORTH);
             mainPanel.add(operationPanel, BorderLayout.EAST);
+            mainPanel.add(logoutButton, BorderLayout.SOUTH);
 
             frame.add(mainPanel);
             frame.setVisible(true);
