@@ -1,4 +1,5 @@
 import javax.swing.*;
+import java.awt.*;
 import java.io.*;
 import java.util.*;
 
@@ -17,12 +18,16 @@ public class Login {
         JTextField usernameField = new JTextField();
         JPasswordField passwordField = new JPasswordField();
         JButton loginButton = new JButton("Login");
+        JButton cancelButton = new JButton("Cancel");
 
         panel.add(new JLabel("Username:"));
         panel.add(usernameField);
         panel.add(new JLabel("Password:"));
         panel.add(passwordField);
-        panel.add(loginButton);
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        buttonPanel.add(loginButton);
+        buttonPanel.add(cancelButton);
+        panel.add(buttonPanel);
 
         loginButton.addActionListener(e -> {
             String username = usernameField.getText();
@@ -34,6 +39,11 @@ public class Login {
             } else {
                 JOptionPane.showMessageDialog(frame, "Invalid username or password!");
             }
+        });
+
+        cancelButton.addActionListener(e -> {
+            frame.dispose();
+            SwingUtilities.invokeLater(() -> new WelcomePage().showPage());
         });
 
         frame.add(panel);
