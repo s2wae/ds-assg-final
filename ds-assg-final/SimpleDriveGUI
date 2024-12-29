@@ -1,0 +1,202 @@
+import java.io.*;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
+public class SimpleDriveGUI {
+
+    private static final String STORAGE_DIR = "storage"; // Simulated storage directory
+    private static DefaultListModel<String> fileListModel;
+
+    public static void main(String[] args) {
+        // Initialize the storage directory
+        File storageDir = new File(STORAGE_DIR);
+        if (!storageDir.exists()) {
+            storageDir.mkdir();
+        }
+
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame("Simple Google Drive");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setSize(600, 400);
+
+            JPanel mainPanel = new JPanel(new BorderLayout());
+
+            // File list
+            fileListModel = new DefaultListModel<>();
+            JList<String> fileList = new JList<>(fileListModel);
+            fileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            JScrollPane listScrollPane = new JScrollPane(fileList);
+
+            refreshFileList();
+
+            // Upload button
+            JButton uploadLocalButton = new JButton("Upload File");
+            uploadLocalButton.addActionListener(e -> uploadFileFromLocal());
+
+            // Operation panel
+            JPanel operationPanel = new JPanel();
+            operationPanel.setLayout(new BoxLayout(operationPanel, BoxLayout.Y_AXIS));
+
+            JButton viewFileButton = new JButton("View File");
+            viewFileButton.addActionListener(e -> {
+                String selectedFile = fileList.getSelectedValue();
+                if (selectedFile != null) {
+                    readFile(selectedFile);
+                } else {
+                    JOptionPane.showMessageDialog(frame, "Please select a file.", "Warning", JOptionPane.WARNING_MESSAGE);
+                }
+            });
+
+            JButton editFileButton = new JButton("Edit File");
+            editFileButton.addActionListener(e -> {
+                String selectedFile = fileList.getSelectedValue();
+                if (selectedFile != null) {
+                    editFile(selectedFile);
+                    refreshFileList();
+                } else {
+                    JOptionPane.showMessageDialog(frame, "Please select a file.", "Warning", JOptionPane.WARNING_MESSAGE);
+                }
+            });
+
+            JButton deleteFileButton = new JButton("Delete File");
+            deleteFileButton.addActionListener(e -> {
+                String selectedFile = fileList.getSelectedValue();
+                if (selectedFile != null) {
+                    deleteFile(selectedFile);
+                    refreshFileList();
+                } else {
+                    JOptionPane.showMessageDialog(frame, "Please select a file.", "Warning", JOptionPane.WARNING_MESSAGE);
+                }
+            });
+
+            operationPanel.add(viewFileButton);
+            operationPanel.add(editFileButton);
+            operationPanel.add(deleteFileButton);
+
+            // Main panel layout
+            mainPanel.add(listScrollPane, BorderLayout.CENTER);
+            mainPanel.add(uploadLocalButton, BorderLayout.NORTH);
+            mainPanel.add(operationPanel, BorderLayout.EAST);
+
+            frame.add(mainPanel);
+            frame.setVisible(true);
+        });
+    }
+
+    private static void refreshFileList() {
+        fileListModel.clear();
+        File storageDir = new File(STORAGE_DIR);
+        File[] files = storageDir.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                fileListModel.addElement(file.getName());
+            }
+        }
+    }
+
+    private static void uploadFileFromLocal() {
+        JFileChooser fileChooser = new JFileChooser();
+        int result = fileChooser.showOpenDialog(null);
+
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File localFile = fileChooser.getSelectedFile();
+
+            File destinationFile = new File(STORAGE_DIR, localFile.getName());
+
+            if (destinationFile.exists()) {
+                JOptionPane.showMessageDialog(null, "The target file already exists.");
+                return;
+            }
+
+            try (InputStream in = new FileInputStream(localFile);
+                 OutputStream out = new FileOutputStream(destinationFile)) {
+
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, bytesRead);
+                }
+                JOptionPane.showMessageDialog(null, "File uploaded successfully!");
+                refreshFileList();
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(null, "Error uploading file: " + e.getMessage());
+            }
+        }
+    }
+
+    private static void readFile(String fileName) {
+        File file = new File(STORAGE_DIR, fileName);
+
+        if (!file.exists()) {
+            JOptionPane.showMessageDialog(null, "The file does not exist.");
+            return;
+        }
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            StringBuilder content = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                content.append(line).append("\n");
+            }
+
+            JTextArea textArea = new JTextArea(content.toString());
+            textArea.setLineWrap(true);
+            textArea.setWrapStyleWord(true);
+            JScrollPane scrollPane = new JScrollPane(textArea);
+            scrollPane.setPreferredSize(new Dimension(400, 300));
+
+            JOptionPane.showMessageDialog(null, scrollPane, "File Content", JOptionPane.INFORMATION_MESSAGE);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "Error reading file: " + e.getMessage());
+        }
+    }
+
+    private static void editFile(String fileName) {
+        File file = new File(STORAGE_DIR, fileName);
+
+        if (!file.exists()) {
+            JOptionPane.showMessageDialog(null, "The file does not exist.");
+            return;
+        }
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            StringBuilder content = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                content.append(line).append("\n");
+            }
+
+            JTextArea textArea = new JTextArea(content.toString());
+            textArea.setLineWrap(true);
+            textArea.setWrapStyleWord(true);
+            JScrollPane scrollPane = new JScrollPane(textArea);
+            scrollPane.setPreferredSize(new Dimension(400, 300));
+
+            int option = JOptionPane.showConfirmDialog(null, scrollPane, "Edit File", JOptionPane.OK_CANCEL_OPTION);
+            if (option == JOptionPane.OK_OPTION) {
+                try (FileWriter writer = new FileWriter(file)) {
+                    writer.write(textArea.getText());
+                    JOptionPane.showMessageDialog(null, "File edited successfully!");
+                }
+            }
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "Error editing file: " + e.getMessage());
+        }
+    }
+
+    private static void deleteFile(String fileName) {
+        File file = new File(STORAGE_DIR, fileName);
+
+        if (!file.exists()) {
+            JOptionPane.showMessageDialog(null, "The file does not exist.");
+            return;
+        }
+
+        if (file.delete()) {
+            JOptionPane.showMessageDialog(null, "File deleted successfully!");
+        } else {
+            JOptionPane.showMessageDialog(null, "Error deleting file.");
+        }
+    }
+}
