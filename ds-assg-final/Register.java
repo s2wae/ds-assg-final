@@ -1,8 +1,7 @@
-// Register.java
-
 import javax.swing.*;
 import java.io.*;
 import java.util.*;
+import java.awt.*;
 
 public class Register {
 
@@ -19,12 +18,16 @@ public class Register {
         JTextField usernameField = new JTextField();
         JPasswordField passwordField = new JPasswordField();
         JButton registerButton = new JButton("Register");
+        JButton cancelButton = new JButton("Cancel");
 
         panel.add(new JLabel("Username:"));
         panel.add(usernameField);
         panel.add(new JLabel("Password:"));
         panel.add(passwordField);
-        panel.add(registerButton);
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        buttonPanel.add(registerButton);
+        buttonPanel.add(cancelButton);
+        panel.add(buttonPanel);
 
         registerButton.addActionListener(e -> {
             String username = usernameField.getText();
@@ -37,6 +40,11 @@ public class Register {
             } else {
                 JOptionPane.showMessageDialog(frame, "All fields are required!");
             }
+        });
+
+        cancelButton.addActionListener(e -> {
+            frame.dispose();
+            SwingUtilities.invokeLater(() -> new WelcomePage().showPage());
         });
 
         frame.add(panel);
